@@ -12,27 +12,34 @@ import ke.co.scedar.utilities.multi_processing.Processor;
  * On: 19/03/2025. 22:18
  * Description:
  **/
-
 public class Main {
     public static void main(String[] args) {
         Processor.init();
         EventBus eventBus = EventBus.getInstance();
 
         // Subscribe to events
-        EventBus bus = EventBus.getInstance();
-        bus.subscribe(UserRegisteredEvent.class, new UserRegistrationSubscriber());
+        eventBus.subscribe(UserRegisteredEvent.class, new UserRegistrationSubscriber());
 
-        // Publish events
-        System.out.println("Publishing events...");
-        UserRegisteredEvent registrationPayload = new UserRegisteredEvent("user123", "user@example.com");
-        Event<UserRegisteredEvent> registrationEvent = new Event<>("UserRegistered", registrationPayload, 1);
-        EventBus.getInstance().publish(registrationEvent);
+        // Stress test: publish a large number of events
+        System.out.println("Publishing events stress test...");
+        int numberOfEvents = 100_000; // adjust this number based on how heavy you want the test to be
+        long startTime = System.currentTimeMillis();
 
+        for (int i = 0; i < numberOfEvents; i++) {
+            UserRegisteredEvent payload = new UserRegisteredEvent("user" + i, "user" + i + "@example.com");
+            Event<UserRegisteredEvent> event = new Event<>("UserRegistered", payload, 1);
+            eventBus.publish(event);
+        }
 
-        // Simulate delay for background processing
-        try { Thread.sleep(10000); } catch (InterruptedException ignored) {}
+        long endTime = System.currentTimeMillis();
+        System.out.println("Published " + numberOfEvents + " events in " + (endTime - startTime) + " ms");
 
-        // Shutdown event bus to release resources
+        // Allow some time for background processing of events
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ignored) {}
+
+        // Shutdown event bus and processor to release resources
         eventBus.shutdown();
         Processor.shutdown();
     }
