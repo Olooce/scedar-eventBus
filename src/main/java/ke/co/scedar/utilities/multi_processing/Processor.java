@@ -1,5 +1,6 @@
 package ke.co.scedar.utilities.multi_processing;
 
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -88,7 +89,7 @@ public class Processor {
             throw new IllegalStateException("Processor not initialized. Call init() at startup.");
         }
         priorityQueue.add(new PrioritizedTask(task, priority));
-        executor.execute(priorityQueue.poll());
+        executor.execute(Objects.requireNonNull(priorityQueue.poll()));
     }
 
     public static int getAvailableThreads() {
