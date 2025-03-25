@@ -12,6 +12,7 @@ public class Processor {
 
     private static ThreadPoolExecutor executor;
     private static ScheduledExecutorService scheduledExecutor;
+    private static PriorityBlockingQueue<PrioritizedTask> priorityQueue;
 
     // ANSI color codes for logging
     private static final String ANSI_RESET  = "\u001B[0m";
@@ -35,9 +36,11 @@ public class Processor {
             int queueCapacity = 100;
             int scheduledPoolSize = 1;
 
+
+            priorityQueue = new PriorityBlockingQueue<>();
             executor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, 60L, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<>(queueCapacity), namedThreadFactory,
-                    new ThreadPoolExecutor.CallerRunsPolicy() { //Got this idea from chatGPT if the threads are maxed out and the queue is full have the calling thread complete the task
+                    new ThreadPoolExecutor.CallerRunsPolicy() {
                         @Override
                         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
                             System.err.println("[WARN] Task is running in the calling thread due to overload: " + Thread.currentThread().getName());
@@ -78,6 +81,14 @@ public class Processor {
             throw new IllegalStateException("Processor not initialized. Call init() at startup.");
         }
         scheduledExecutor.schedule(task, delay, unit);
+    }
+
+    public static void submitTask(Runnable task, int priority) {
+        if (executor == null) {
+            throw new IllegalStateException("Processor not initialized. Call init() at startup.");
+        }
+        priorityQueue.add(new PrioritizedTask(task, priority));
+        executor.execute(priorityQueue.poll());
     }
 
     public static int getAvailableThreads() {
@@ -123,4 +134,17 @@ public class Processor {
 
         System.out.println(ANSI_GREEN + "[INFO] Processor thread pool shutdown complete." + ANSI_RESET);
     }
+
+    private record PrioritizedTask(Runnable task, int priority) implements Runnable, Comparable<PrioritizedTask> {
+
+        @Override
+            public void run() {
+                task.run();
+            }
+
+            @Override
+            public int compareTo(PrioritizedTask other) {
+                return Integer.compare(other.priority, this.priority); // Higher priority first
+            }
+        }
 }
