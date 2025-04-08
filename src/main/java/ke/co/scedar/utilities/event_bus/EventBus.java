@@ -1,5 +1,7 @@
 package ke.co.scedar.utilities.event_bus;
 
+import ke.co.scedar.utilities.Logger;
+
 import java.io.*;
 import java.util.concurrent.*;
 import java.util.*;
@@ -32,11 +34,9 @@ public class EventBus {
     }
 
     public <T extends Serializable> void publish(Event<T> event) {
-        // Use the payload's class as the key for caching.
         Class<?> key = event.getPayload().getClass();
         eventCache.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).offer(event);
 
-        // Notify subscribers immediately.
         List<EventSubscriber<?>> subs = subscribers.get(key);
         if (subs != null) {
             for (EventSubscriber subscriber : subs) {
@@ -52,7 +52,10 @@ public class EventBus {
     }
 
     public void shutdown() {
-        if (persistUnprocessedEventsOnShutdown) saveUnprocessedEvents();
+        if (persistUnprocessedEventsOnShutdown) {
+            Logger.info("Persisting unprocessed events to disk...");
+            saveUnprocessedEvents();
+        }
     }
 
     private void saveUnprocessedEvents() {
@@ -62,8 +65,9 @@ public class EventBus {
                 while (!entry.getValue().isEmpty()) {
                     oos.writeObject(entry.getValue().poll());
                 }
+                Logger.info("Persisted events for: " + entry.getKey().getSimpleName());
             } catch (IOException e) {
-                System.err.println("Failed to persist events: " + e.getMessage());
+                Logger.error("Failed to persist events for " + entry.getKey().getSimpleName(), e);
             }
         }
     }

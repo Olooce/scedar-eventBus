@@ -2,6 +2,7 @@ package ke.co.scedar;
 
 import ke.co.scedar.events.UserRegisteredEvent;
 import ke.co.scedar.subscribers.UserRegistrationSubscriber;
+import ke.co.scedar.utilities.Logger;
 import ke.co.scedar.utilities.event_bus.Event;
 import ke.co.scedar.utilities.event_bus.EventBus;
 import ke.co.scedar.utilities.multi_processing.Processor;
@@ -21,7 +22,7 @@ public class Main {
         eventBus.subscribe(UserRegisteredEvent.class, new UserRegistrationSubscriber());
 
         // Stress test: publish a large number of events
-        System.out.println("Publishing events stress test...");
+        Logger.info("Publishing events stress test...");
         int numberOfEvents = 100_000; // adjust this number based on how heavy you want the test to be
         long startTime = System.currentTimeMillis();
 
@@ -32,13 +33,13 @@ public class Main {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("Published " + numberOfEvents + " events in " + (endTime - startTime) + " ms");
+        Logger.info("Published " + numberOfEvents + " events in " + (endTime - startTime) + " ms");
 
         // Allow some time for background processing of events
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
-            System.out.println("Interrupted" + e.getMessage());
+            Logger.error("Interrupted while sleeping", e);
         }
 
         // Shutdown event bus and processor to release resources
