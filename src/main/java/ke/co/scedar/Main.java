@@ -37,7 +37,9 @@ public class Main {
         // Allow some time for background processing of events
         try {
             Thread.sleep(10000);
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted" + e.getMessage());
+        }
 
         // Shutdown event bus and processor to release resources
         eventBus.shutdown();

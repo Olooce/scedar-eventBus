@@ -31,7 +31,7 @@ public class EventBus {
         eventCache.putIfAbsent(eventType, new LinkedBlockingQueue<>());
     }
 
-    public <T> void publish(Event<T> event) {
+    public <T extends Serializable> void publish(Event<T> event) {
         // Use the payload's class as the key for caching.
         Class<?> key = event.getPayload().getClass();
         eventCache.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).offer(event);
@@ -45,7 +45,7 @@ public class EventBus {
         }
     }
 
-    public <T> Event<T> retrieveEvent(Class<T> eventType) throws InterruptedException {
+    public <T extends Serializable> Event<T> retrieveEvent(Class<T> eventType) throws InterruptedException {
         BlockingQueue<Event<?>> queue = eventCache.get(eventType);
         if (queue == null) return null;
         return (Event<T>) queue.take();

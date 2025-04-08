@@ -8,7 +8,9 @@ import java.io.Serializable;
  * On: 23/03/2025. 23:50
  * Description:
  **/
-public class Event<T> implements Serializable {
+public class Event<T extends Serializable> implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String type;
     private final T payload;
     private final int priority;
