@@ -6,8 +6,10 @@ import java.io.*;
 import java.util.concurrent.*;
 import java.util.*;
 
-public class EventBus {
-    private static final EventBus INSTANCE = new EventBus();
+public class EventBus implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final Map<Class<?>, BlockingQueue<Event<?>>> eventCache = new ConcurrentHashMap<>();
     private final Map<Class<?>, List<EventSubscriber<?>>> subscribers = new ConcurrentHashMap<>();
     private static boolean persistUnprocessedEventsOnShutdown = false;
@@ -18,10 +20,23 @@ public class EventBus {
         if (!STORAGE_DIR.exists()) STORAGE_DIR.mkdirs();
     }
 
-    private EventBus() {}
+    private EventBus() {
+        if (Holder.INSTANCE != null) {
+            throw new IllegalStateException("Use getInstance() to access EventBus.");
+        }
+    }
+
+    private static class Holder {
+        private static final EventBus INSTANCE = new EventBus();
+    }
 
     public static EventBus getInstance() {
-        return INSTANCE;
+        return Holder.INSTANCE;
+    }
+
+    // Protect against serialization-based instantiation
+    protected Object readResolve() {
+        return getInstance();
     }
 
     public static void init(boolean persistOnShutdown) {
