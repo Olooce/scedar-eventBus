@@ -45,7 +45,7 @@ public class Logger {
 
     private static String getCallingClassAndMethod() {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        //NOTE: The first element is getStackTrace, the second is log, the third is info, and the fourth is the actual calling method
+        //NOTE: The first element is getStackTrace, the second is log, the third is level, and the fourth is the actual calling method
         if (stackTrace.length > 4) {
             String className = stackTrace[4].getClassName(); // The class name from which log() was called
             String methodName = stackTrace[4].getMethodName(); // The method name from which log() was called
