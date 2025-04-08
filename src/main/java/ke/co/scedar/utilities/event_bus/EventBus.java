@@ -26,7 +26,7 @@ public class EventBus {
         persistUnprocessedEventsOnShutdown = persistOnShutdown;
     }
 
-    public <T> void subscribe(Class<T> eventType, EventSubscriber<T> subscriber) {
+    public <T extends Serializable> void subscribe(Class<T> eventType, EventSubscriber<T> subscriber) {
         subscribers.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>()).add(subscriber);
         eventCache.putIfAbsent(eventType, new LinkedBlockingQueue<>());
     }
