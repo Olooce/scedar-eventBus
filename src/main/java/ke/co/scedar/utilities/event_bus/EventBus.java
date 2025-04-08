@@ -21,10 +21,9 @@ public class EventBus implements Serializable {
     }
 
     private EventBus() {
-        if (Holder.INSTANCE != null) {
-            throw new IllegalStateException("Use getInstance() to access EventBus.");
-        }
+        // Prevent external instantiation
     }
+
 
     private static class Holder {
         private static final EventBus INSTANCE = new EventBus();
