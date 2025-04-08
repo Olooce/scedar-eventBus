@@ -34,6 +34,7 @@ public class EventBus implements Serializable {
     }
 
     // Protect against serialization-based instantiation
+    @Serial
     protected Object readResolve() {
         return getInstance();
     }
