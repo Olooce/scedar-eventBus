@@ -50,7 +50,14 @@ public class EventBus implements Serializable {
 
     public <T extends Serializable> void publish(Event<T> event) {
         Class<?> key = event.getPayload().getClass();
-        eventCache.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).offer(event);
+        boolean added = eventCache
+                .computeIfAbsent(key, k -> new LinkedBlockingQueue<>())
+                .offer(event);
+
+        if (!added) {
+            Logger.warn("Failed to queue event: " + event);
+            return;
+        }
 
         List<EventSubscriber<?>> subs = subscribers.get(key);
         if (subs != null) {
@@ -59,6 +66,7 @@ public class EventBus implements Serializable {
             }
         }
     }
+
 
     public <T extends Serializable> Event<T> retrieveEvent(Class<T> eventType) throws InterruptedException {
         BlockingQueue<Event<?>> queue = eventCache.get(eventType);
