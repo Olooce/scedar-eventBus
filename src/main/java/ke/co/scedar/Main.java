@@ -39,6 +39,7 @@ public class Main {
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             Logger.error("Interrupted while sleeping", e);
         }
 
