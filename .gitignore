@@ -34,5 +34,7 @@ build/
 ### VS Code ###
 .vscode/
 
+event_storage/
+
 ### Mac OS ###
 .DS_Store
